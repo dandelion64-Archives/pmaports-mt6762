@@ -2,6 +2,7 @@ dm_crypt
 ext4
 crc32c_generic
 usb_f_rndis
+usb_f_ncm
 f2fs
 xts
 libaes
