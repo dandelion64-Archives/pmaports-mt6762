@@ -1,0 +1,7 @@
+[Unit]
+Description=Chats (daemon)
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/chatty --daemon
+Restart=always

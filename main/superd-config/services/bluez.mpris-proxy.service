@@ -1,0 +1,7 @@
+[Unit]
+Description=mpris-proxy daemon
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/mpris-proxy
+Restart=always

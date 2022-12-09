@@ -1,0 +1,7 @@
+[Unit]
+Description=Daemon for managing PulseAudio for phone call audio
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/wys
+Restart=always

@@ -1,0 +1,7 @@
+[Unit]
+Description=A phone dialer and call handler (daemon mode)
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/gnome-calls --daemon
+Restart=always

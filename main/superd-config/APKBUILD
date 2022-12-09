@@ -1,0 +1,78 @@
+# Contributor: Clayton Craft <clayton@craftyguy.net>
+# Maintainer: Clayton Craft <clayton@craftyguy.net>
+pkgname=superd-config
+pkgver=0.1
+pkgrel=0
+pkgdesc="superd user service configuration files"
+url="https://gitlab.com/postmarketOS/pmaports"
+arch="noarch"
+license="GPL-3.0-or-later"
+options="!check"  # no tests
+depends="superd"
+subpackages="
+	bluez-superd:_service
+	calls-superd:_service
+	chatty-superd:_service
+	mmsd-tng-superd:_service
+	udiskie-superd:_service
+	vvmd-superd:_service
+	wys-superd:_service
+"
+# Files in the format: <package>[.service name].service
+# Where:
+#     package: name of the package that provides the app for the service
+#     service name: if different from the package, the name of the service.
+#     This is optional, if omitted then the package name is used to name the
+#     service file that is installed
+source="
+	services/bluez.mpris-proxy.service
+	services/calls.service
+	services/chatty.service
+	services/mmsd-tng.service
+	services/udiskie.service
+	services/vvmd.service
+	services/wys.service
+	superd.desktop
+"
+builddir="$srcdir/"
+
+package() {
+	# TODO: is this a good location?
+	install_if="superd"
+	install -Dm644 "$srcdir"/superd.desktop \
+		-t "$pkgdir"/usr/lib/superd/
+}
+
+_service() {
+	# The package that the service belongs to is in the subpackage name
+	local _servicepkg="${subpkgname%-*}"
+	install_if="superd $_servicepkg"
+	pkgdesc="superd service file(s) for $_servicepkg"
+
+	# Iterate through all .service files that "belong" to the package
+	local f
+	for f in services/"$_servicepkg".*; do
+		# Extract the name of each service from the file
+		local _name="$(basename $f)"
+		# Remove the package prefix iif the file is in
+		# the format <package>.<service name>.service
+		case "$_name" in ("$_servicepkg".*.service)
+			_name="${_name#$_servicepkg.}" ;;
+			# Else the service name is the same as the package name,
+			# <package>.service
+		esac
+
+		install -Dm644 "$f" \
+			"$subpkgdir"/usr/share/superd/services/"$_name"
+	done
+}
+sha512sums="
+2497e48523688b455e4e939117058ca3782a7d32865e40df3f6cfa99032b018567ea244494778bce1fa75c3cf4c7b2a4da10972f0f352c17e2f7fa52f429ae4d  bluez.mpris-proxy.service
+1ffbd138836f703e6be2005d5c0b9b5cc7fbfea7c0db6635f01bc8d1261d9475febbdecd188757d79198836ab065ba575f30433616fd81233eeb660084c09195  calls.service
+69346d67284c4dd9909db3db9b84025e9898f56890b2c713940a218cca1fb6466b7d8242aa49a16f2cb2dca472e3b200212accb554564f9387ee44d52fd604fb  chatty.service
+78a3b674d0c3498b6d27be591c71b0b78b2b550128d16283f5cc1ce0100b8ba311d22c8f50deb3bd8efac45160e95257909c7c7875cd4b4f53b61f5ec6998277  mmsd-tng.service
+eb5a2d22715633ed29ea845e47ef7ebc8490b394b774004ecf309294d6b5c22ee9b4b1dbd115022adf3a632b1c0ee49a6f872adf88057f5043eaa5727ff26470  udiskie.service
+c508348beae84ef9862a659d57545be9c1fdf83a76978f8679db81183b1b93ebc6598926c170cf0394889367a1a7409c0c3e7273e3d1939d3d3e060626ef9ed4  vvmd.service
+0fbbb40da7fdce4d25863b7433c3e98674e00e1cc22c47232cd4ffaeb4a5b8d92dbe60d258cccf575462b1aba3e4c08adc18a84f355574fe7d585a8e0ef4491d  wys.service
+ba69b7d850025ef3efc053362c341cdd66bc9aa772f1905ecc0371bebecd361132909250bfa078b5f3b7c814d351d4eac9ea05406c9e4c3dd7f60828045aa2cc  superd.desktop
+"

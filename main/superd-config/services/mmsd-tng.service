@@ -1,0 +1,7 @@
+[Unit]
+Description=Daemon for MMS
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/mmsdtng -d
+Restart=always

@@ -1,0 +1,7 @@
+[Unit]
+Description=Daemon for Visual Voicemail
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/vvmd -d
+Restart=always
