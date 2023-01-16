@@ -1,0 +1,69 @@
+# Maintainer: Newbyte <newbie13xd@gmail.com>
+# Kernel config based on: arch/arm64/configs/msm8916_defconfig
+
+_flavor="postmarketos-qcom-msm8226"
+pkgname=linux-$_flavor
+pkgver=6.1
+pkgrel=0
+pkgdesc="Mainline kernel fork for Qualcomm APQ8026/MSM8226/MSM8926 devices"
+arch="armv7"
+url="https://kernel.org"
+license="GPL-2.0-only"
+options="!strip !check !tracedeps
+	pmb:cross-native
+"
+makedepends="
+	bison
+	findutils
+	flex
+	gmp-dev
+	mpc1-dev
+	mpfr-dev
+	openssl-dev
+	perl
+	postmarketos-installkernel
+"
+
+# Architecture
+case "$CARCH" in
+	arm*)    _carch="arm" ;;
+esac
+
+# Source
+_tag=v${pkgver//_/-}
+source="
+	$pkgname-$_tag.tar.gz::$url/archive/$_tag.tar.gz
+	config-$_flavor.armv7
+"
+builddir="$srcdir/linux-${_tag#v}"
+
+prepare() {
+	default_prepare
+	cp "$srcdir/config-$_flavor.$CARCH" .config
+}
+
+build() {
+	unset LDFLAGS
+	make ARCH="$_carch" CC="${CC:-gcc}" \
+		KBUILD_BUILD_VERSION=$((pkgrel + 1 ))
+}
+
+package() {
+	mkdir -p "$pkgdir"/boot
+	make zinstall modules_install dtbs_install \
+		ARCH="$_carch" \
+		INSTALL_PATH="$pkgdir"/boot \
+		INSTALL_MOD_PATH="$pkgdir" \
+		INSTALL_MOD_STRIP=1 \
+		INSTALL_DTBS_PATH="$pkgdir"/boot/dtbs
+	rm -f "$pkgdir"/lib/modules/*/build "$pkgdir"/lib/modules/*/source
+
+	install -D "$builddir"/include/config/kernel.release \
+		"$pkgdir"/usr/share/kernel/$_flavor/kernel.release
+}
+
+sha512sums="
+409c96c891c098317545606765653e4168c1464261a65f872dc01b2d41823780a8c3a7e61455dfa705c5fb68c07c5528b42442816619b0f58e602231cb32fcc7  linux-postmarketos-qcom-msm8916-v6.1-msm8916.tar.gz
+8bb247d4aece1562c72083c9f6804b0fdff07b6160b2e361dee63d6e4be82f40e2ebbb4f1c33766d55deb5e5a94baa50de0aa373a8d5b4ddc5f3f5e4e7c3bb4c  config-postmarketos-qcom-msm8916.aarch64
+218d398a7898e6134704777666e290d9319ef600483735b6ad95e97ffc8db3a99ca5fddfce4b5263588d5f454db3b389203998a990ed2a42cb59eec2886bab01  config-postmarketos-qcom-msm8916.armv7
+"
