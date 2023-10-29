@@ -1,0 +1,41 @@
+# Reference: <https://postmarketos.org/devicepkg>
+pkgname=device-xiaomi-dandelion
+pkgdesc="Xiaomi Redmi 9A"
+pkgver=0.1
+pkgrel=0
+url="https://postmarketos.org"
+license="MIT"
+arch="aarch64"
+options="!check !archcheck"
+depends="
+	linux-postmarketos-mediatek-mt6762
+	mkbootimg
+	postmarketos-base
+"
+makedepends="
+	devicepkg-dev
+	dtc
+	android-tools
+"
+source="
+	deviceinfo
+	minimal-dto.dts
+"
+
+build() {
+	devicepkg_build $startdir $pkgname
+
+	dtc -O dtb -o "$srcdir/minimal.dtbo" "$srcdir/minimal-dto.dts"
+	mkdtboimg create "$srcdir/dtbo.img" --page_size=2048 "$srcdir/minimal.dtbo"
+}
+
+package() {
+	devicepkg_package $startdir $pkgname
+
+	install -Dm644 "$srcdir/dtbo.img" "$pkgdir/boot/dtbo.img"
+}
+
+sha512sums="
+95aa4b7abdc5c4585853c115017a8bd4a5ae6338faf59d63e13607cd5b4c55ff9a0cf8760b071c052da33a11f76f9acdc1e02e70b39714924586dadf9ecb4191  deviceinfo
+fc8da324b5f9ecc6d83bcfc732448c2119159e5a376d075666da70b871ccf5324431bcb7ffe869aae45fe65c7a73c6c4150db507d1680c1f3c0208d563430ca1  minimal-dto.dts
+"

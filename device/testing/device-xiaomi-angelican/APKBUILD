@@ -1,0 +1,41 @@
+# Reference: <https://postmarketos.org/devicepkg>
+pkgname=device-xiaomi-angelican
+pkgdesc="Xiaomi Redmi 9C NFC"
+pkgver=0.1
+pkgrel=0
+url="https://postmarketos.org"
+license="MIT"
+arch="aarch64"
+options="!check !archcheck"
+depends="
+	linux-postmarketos-mediatek-mt6762
+	mkbootimg
+	postmarketos-base
+"
+makedepends="
+	devicepkg-dev
+	dtc
+	android-tools
+"
+source="
+	deviceinfo
+	minimal-dto.dts
+"
+
+build() {
+	devicepkg_build $startdir $pkgname
+
+	dtc -O dtb -o "$srcdir/minimal.dtbo" "$srcdir/minimal-dto.dts"
+	mkdtboimg create "$srcdir/dtbo.img" --page_size=2048 "$srcdir/minimal.dtbo"
+}
+
+package() {
+	devicepkg_package $startdir $pkgname
+
+	install -Dm644 "$srcdir/dtbo.img" "$pkgdir/boot/dtbo.img"
+}
+
+sha512sums="
+09ab86401f1d7e20d06f34f1668110d9512a8ebecc02bbdcd7a37f6c6dc99e2f921560dcf67d7620448a3a73269b560279e76caf0130d4191951e544c68bd226  deviceinfo
+042375f509ac757c0df0d93f00f33e89fb3a3988ab82830cf4a6c5b6c905bcf381bc173f2cfcc4f9feb03410734917787b0559fbda216e326636735cdaa247b9  minimal-dto.dts
+"
