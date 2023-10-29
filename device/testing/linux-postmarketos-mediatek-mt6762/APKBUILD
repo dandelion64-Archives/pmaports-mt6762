@@ -1,0 +1,64 @@
+# Mainline Linux kernel fork with patches for MediaTek MT6765 devices
+# Kernel config based on: arch/arm64/configs/mt6765_defconfig
+_flavor="postmarketos-mediatek-mt6762"
+pkgname=linux-$_flavor
+pkgver=6.5_rc3
+pkgrel=1
+_commit="36656614e79082a918115c2c24e813d3461a70c0"
+pkgdesc="Mainline Kernel fork for MT6765-based devices"
+arch="aarch64"
+_carch="arm64"
+_config="config-$_flavor.$arch"
+url="https://gitlab.com/mtk-mainline/mt6762/linux"
+license="GPL-2.0-only"
+options="!strip !check !tracedeps
+	pmb:cross-native
+"
+makedepends="
+	bash
+	bison
+	findutils
+	flex
+	linux-headers
+	openssl-dev
+	perl
+	postmarketos-installkernel
+	xz
+"
+
+# Source
+source="
+	https://gitlab.com/ookiineko/linux-mt6762/-/archive/$_commit/linux-mt6762-$_commit.tar.gz
+	$_config
+"
+builddir="$srcdir/linux-mt6762-$_commit"
+
+prepare() {
+	default_prepare
+	cp "$srcdir/config-$_flavor.$arch" .config
+}
+
+build() {
+	unset LDFLAGS
+	make ARCH="$_carch" CC="${CC:-gcc}" \
+		KBUILD_BUILD_VERSION="$((pkgrel + 1))-$_flavor" \
+		V=1
+}
+
+package() {
+	mkdir -p "$pkgdir"/boot
+
+	make zinstall modules_install dtbs_install \
+		ARCH="$_carch" INSTALL_PATH="$pkgdir"/boot \
+		INSTALL_MOD_PATH="$pkgdir" INSTALL_MOD_STRIP=1 \
+		INSTALL_DTBS_PATH="$pkgdir"/boot/dtbs
+	rm -f "$pkgdir"/lib/modules/*/build "$pkgdir"/lib/modules/*/source
+
+	install -D "$builddir"/include/config/kernel.release \
+		"$pkgdir"/usr/share/kernel/$_flavor/kernel.release
+}
+
+sha512sums="
+b1b00f3dc9351236ffe7530980ffcf3200f98502bae0ad9350f275c782aebb069937e6402924aacd643f785c698c84e9691747e982053d32aef29850157d1db7  linux-mt6762-36656614e79082a918115c2c24e813d3461a70c0.tar.gz
+1ebe1af852054bcbd9b3f41dc2fbcfaa57b4d8178dc279256d5c30b2a15458b17ecd30a4cf5e16c152040c303cd862d233c8a664874fdb6d3b18d53474198ef0  config-postmarketos-mediatek-mt6762.aarch64
+"
